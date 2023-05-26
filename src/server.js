@@ -8,6 +8,7 @@ import router from "./router/index.js";
 app.use(cors());  
 app.use(bodyParser.json({extended: true,limit: "500mb", parameterLimit: 500}));
 app.use(bodyParser.urlencoded({extended: true,limit: "500mb", parameterLimit: 500}))
+app.use("/api/v1.0/upload", express.static('assets'))
 app.use("/api/v1.0", router)
 app.listen(PORT, () => {
   console.log(`Server is runing on http://localhost:${PORT}`);

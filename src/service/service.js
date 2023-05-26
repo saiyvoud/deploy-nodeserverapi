@@ -5,18 +5,55 @@ import Models from "../model/index.js";
 export const GenerateToken = (user) => {
   return new Promise(async (resovle, reject) => {
     try {
+     // console.log(`user======>${user.phoneNumber}`);
       let token = jwt.sign(
         {
           _id: user._id,
           phoneNumber: user.phoneNumber,
         },
         `${SECRET_KEY}`,
-        { expiresIn: "1h" }
+        { expiresIn: "1d" }
       );
-      console.log(token);
-      resovle({ token });
+      let refreshToken = await GenerateRefreshToken(token, user);
+      resovle({ token, refreshToken });
     } catch (error) {
       console.log(error);
+      reject(error);
+    }
+  });
+};
+
+export const GenerateRefreshToken = (token, user) => {
+  return new Promise(async (resovle, reject) => {
+    try {
+      let refreshToken = jwt.sign(
+        { _id: user._id, phoneNumber: user.phoneNumber, token },
+        `${SECRET_KEY}`
+      );
+      refreshToken
+        ? resovle(refreshToken)
+        : reject("Error Generate RefreshToken");
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const VerifyRefreshToken = (token, refreshToken) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      jwt.verify(refreshToken, `${SECRET_KEY}`, async (err, decode) => {
+        if (err) return reject(err);
+        console.log(`decode===>${decode.token}`);
+        console.log(`token===>${token}`);
+        if (decode.token == token) {
+          const newToken = await GenerateToken(decode);
+          resolve(newToken);
+        } else {
+          reject("Invalid RefreshToken");
+        }
+      });
+    } catch (error) {
       reject(error);
     }
   });
@@ -54,9 +91,9 @@ export const CheckPriceRef = (partsId, priceTotal) => {
         _id: partsId,
         is_Active: true,
       });
-     
+
       if (priceTotal != parts.price) {
-       return reject("Error Not Match PricTotal");
+        return reject("Error Not Match PricTotal");
       }
       return resovle(parts);
     } catch (error) {

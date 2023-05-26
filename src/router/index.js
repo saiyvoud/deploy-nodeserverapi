@@ -11,8 +11,10 @@ router.get("/user/getOne/:userId",auth, AuthController.getProfile);
 router.get("/user/getAll", auth, AuthController.getAll);
 router.post("/user/register", AuthController.register);
 router.post("/user/login", AuthController.login);
+router.post("/user/refreshToken", AuthController.RefreshToken);
 router.put("/user/updateUser/:userId",auth, AuthController.updateUser);
 router.put("/user/updateProfile/:userId",auth, AuthController.updateUserProfile);
+router.put("/user/updateProfileMulti/:userId",auth, AuthController.updateUserProfileMulti);
 router.put("/user/deleteUser/:userId",auth, AuthController.deleteUser);
 // ------- Banner ------
 router.post("/banner/insert",auth,BannerController.insert);

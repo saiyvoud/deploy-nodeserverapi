@@ -19,8 +19,8 @@ const userSchema = mongoose.Schema(
       require: true,
     },
     profile: {
-      type: String,
-      default: "",
+      type: Array,
+      require: true,
     },
     is_Active: {
       type: Boolean,

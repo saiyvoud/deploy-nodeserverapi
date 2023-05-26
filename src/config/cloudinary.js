@@ -4,6 +4,8 @@ import {
   CLOUDINARY_API_SECRET,
   CLOUDINARY_NAME,
 } from "./globalKey.js";
+import { UploadImageToServer,removeImage } from "../service/uploadImageServer.js";
+import e from "express";
 
 cloudinary.config({
   cloud_name: CLOUDINARY_NAME,
@@ -13,19 +15,63 @@ cloudinary.config({
 
 const UploadImage = async (image, oldImage) => {
   try {
+    ///--------------------- image to server -------------
     if (!image) return "";
     if (oldImage) {
       const spliturl = oldImage.split("/");
-      const img_id = spliturl[spliturl.length - 1].split(".")[0];
-      await cloudinary.uploader.destroy(img_id);
+      const img_id = spliturl[spliturl.length - 1];
+      const removed = await removeImage(img_id);
+      console.log("remove image", removed);
     }
-    const res_upload = await cloudinary.uploader.upload(image, null, {
-      public_id: `${Date.now()}`,
-      resource_type: "auto",
-    });
-    return res_upload.url;
+    const imgName = await UploadImageToServer(image);
+   
+    return imgName;
+
+    ///--------------------- cloudinary -------------
+    // if (!image) return "";
+    // if (oldImage) {
+    //   const spliturl = oldImage.split("/");
+    //   const img_id = spliturl[spliturl.length - 1].split(".")[0];
+    //   await cloudinary.uploader.destroy(img_id);
+    // }
+    // const res_upload = await cloudinary.uploader.upload(image, null, {
+    //   public_id: `${Date.now()}`,
+    //   resource_type: "auto",
+    // });
+    // return res_upload.url;
   } catch (error) {
     console.log(error);
+    return "";
+  }
+};
+export const UploadImageMulti = async (image) => {
+  try {
+    ///--------------------- image to server -------------
+    if (!image) return "";
+    // if (oldImage) {
+    //   const spliturl = oldImage.split("/");
+    //   const img_id = spliturl[spliturl.length - 1];
+    //   const removed = await removeImage(img_id);
+    //   console.log("remove image", removed);
+    // }
+    const imgName = await UploadImageToServer(image);
+    console.log("imageName", imgName);
+    return imgName;
+
+    ///--------------------- cloudinary -------------
+    // if (!image) return "";
+    // if (oldImage) {
+    //   const spliturl = oldImage.split("/");
+    //   const img_id = spliturl[spliturl.length - 1].split(".")[0];
+    //   await cloudinary.uploader.destroy(img_id);
+    // }
+    // const res_upload = await cloudinary.uploader.upload(image, null, {
+    //   public_id: `${Date.now()}`,
+    //   resource_type: "auto",
+    // });
+    // return res_upload.url;
+  } catch (error) {
+    console.log(`======>${error}`);
     return "";
   }
 };

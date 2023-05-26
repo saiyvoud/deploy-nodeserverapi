@@ -13,10 +13,10 @@ import {
   ValidateUpdateUser,
   ValidateUpdateUserProfile,
 } from "../service/validate.js";
-import { GenerateToken, ComparePassword } from "../service/service.js";
+import { GenerateToken, ComparePassword,VerifyRefreshToken } from "../service/service.js";
 import { EMessage, SMessage } from "../service/message.js";
 import mongoose from "mongoose";
-import UploadImage from "../config/cloudinary.js";
+import UploadImage, { UploadImageMulti } from "../config/cloudinary.js";
 export default class AuthController {
   static async getProfile(req, res) {
     try {
@@ -84,6 +84,22 @@ export default class AuthController {
     } catch (error) {
       console.log(error);
       return SendError500(res, "Login Faild!");
+    }
+  }
+  static async RefreshToken(req, res) {
+    try {
+      const { token, refreshToken } = req.body;
+      if(!token || !refreshToken){
+       return SendError400(res,"token and refreshToken is required!")
+      }
+      const result = await VerifyRefreshToken(token,refreshToken); 
+      if(!result){
+      return SendError404(res,"Error Generate RefreshToken")
+      }
+     return SendSuccess(res,EMessage.refreshToken,result);
+    } catch (error) {
+      console.log("error refresh token", error);
+      SendError500(res, "Error Refresh Token", error);
     }
   }
   static async register(req, res) {
@@ -170,7 +186,76 @@ export default class AuthController {
       return SendSuccess(res, "Update Profile Successful", user);
     } catch (error) {
       console.log(error);
-      return SendError500(res,"Error Update Profile",error);
+      return SendError500(res, "Error Update Profile", error);
+    }
+  }
+  static async updateUserProfileMulti(req, res) {
+    try {
+      
+      const userId = req.params.userId;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return SendError404(res, EMessage.NotFoundUserID);
+      }
+      const { image, oldImage } = req.body;
+      const validate = ValidateUpdateUserProfile(req.body);
+      if (validate.length > 0) {
+        return SendError400(res, EMessage.PleaseInput + validate.join(","));
+      }
+      // Multi
+      const images = [];
+      if (req.body.image) {
+        const imagePaths = req.body.image.split(",");
+        for (let i = 0; i < imagePaths.length; i++) {
+          const imgUrl = await UploadImage(imagePaths[i]);
+          images.push(imgUrl);
+        }
+      }
+      // const imageUrl = await UploadImage(image)
+
+      let data = { profile: images };
+      const user = await Models.User.findByIdAndUpdate(
+        userId,
+        { $set: data },
+        { new: true }
+      );
+
+      return SendSuccess(res, "Update Profile Successful", user);
+    } catch (error) {
+      console.log(error);
+      return SendError500(res, "Error Update Profile", error);
+    }
+  }
+  static async updateUserProfileMulti(req, res) {
+    try {
+      let images = [];
+      const userId = req.params.userId;
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return SendError404(res, EMessage.NotFoundUserID);
+      }
+      const { image, oldImage } = req.body;
+      const validate = ValidateUpdateUserProfile(req.body);
+      if (validate.length > 0) {
+        return SendError400(res, EMessage.PleaseInput + validate.join(","));
+      }
+      // Multi
+      if (image) {
+        const imagePaths = image.split(",");
+        for (let i = 0; i < imagePaths.length; i++) {
+          const imgUrl = await UploadImage(imagePaths[i]);
+          images.push(imgUrl);
+        }
+      }
+      const user = await Models.User.findByIdAndUpdate(
+        userId,
+        {
+          profile: images,
+        },
+        { new: true }
+      );
+      return SendSuccess(res, "Update Profile Successful", user);
+    } catch (error) {
+      console.log(error);
+      return SendError500(res, "Error Update Profile", error);
     }
   }
 }

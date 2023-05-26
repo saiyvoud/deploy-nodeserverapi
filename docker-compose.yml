@@ -1,0 +1,20 @@
+version: '3.7'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment: 
+      URL_DATABASE_PRODUCT : mongodb+srv://saiyvouds:u3q2ASxgYExB4gFb@cluster0.7yj5o8i.mongodb.net/NodeServerCourse
+      URL_DATABASE_DEV : mongodb://127.0.0.1/
+      PORT : 3000
+      SECRET_KEY : NODE_SERVER_API
+      CLOUDINARY_NAME : dmov0s3nm
+      CLOUDINARY_API_KEY : 953537591318697
+      CLOUDINARY_API_SECRET : npzrG9QgTzFSosGEJgxB4O1sHgQ
+  db: 
+    environment: 
+      USERNAME: root
+      PASSWORD: 
+
+    
