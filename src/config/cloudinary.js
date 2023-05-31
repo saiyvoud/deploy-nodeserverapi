@@ -24,7 +24,6 @@ const UploadImage = async (image, oldImage) => {
       console.log("remove image", removed);
     }
     const imgName = await UploadImageToServer(image);
-   
     return imgName;
 
     ///--------------------- cloudinary -------------

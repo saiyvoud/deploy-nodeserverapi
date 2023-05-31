@@ -239,12 +239,14 @@ export default class AuthController {
       }
       // Multi
       if (image) {
-        const imagePaths = image.split(",");
+        let imagePaths = await image.split(",");
         for (let i = 0; i < imagePaths.length; i++) {
           const imgUrl = await UploadImage(imagePaths[i]);
+          console.log(imgUrl);
           images.push(imgUrl);
         }
       }
+   
       const user = await Models.User.findByIdAndUpdate(
         userId,
         {
