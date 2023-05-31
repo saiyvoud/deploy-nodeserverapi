@@ -189,42 +189,7 @@ export default class AuthController {
       return SendError500(res, "Error Update Profile", error);
     }
   }
-  static async updateUserProfileMulti(req, res) {
-    try {
-      
-      const userId = req.params.userId;
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return SendError404(res, EMessage.NotFoundUserID);
-      }
-      const { image, oldImage } = req.body;
-      const validate = ValidateUpdateUserProfile(req.body);
-      if (validate.length > 0) {
-        return SendError400(res, EMessage.PleaseInput + validate.join(","));
-      }
-      // Multi
-      const images = [];
-      if (req.body.image) {
-        const imagePaths = req.body.image.split(",");
-        for (let i = 0; i < imagePaths.length; i++) {
-          const imgUrl = await UploadImage(imagePaths[i]);
-          images.push(imgUrl);
-        }
-      }
-      // const imageUrl = await UploadImage(image)
 
-      let data = { profile: images };
-      const user = await Models.User.findByIdAndUpdate(
-        userId,
-        { $set: data },
-        { new: true }
-      );
-
-      return SendSuccess(res, "Update Profile Successful", user);
-    } catch (error) {
-      console.log(error);
-      return SendError500(res, "Error Update Profile", error);
-    }
-  }
   static async updateUserProfileMulti(req, res) {
     try {
       let images = [];
@@ -239,7 +204,7 @@ export default class AuthController {
       }
       // Multi
       if (image) {
-        let imagePaths = await image.split(",");
+        let imagePaths = await image.split(" ");
         for (let i = 0; i < imagePaths.length; i++) {
           const imgUrl = await UploadImage(imagePaths[i]);
           console.log(imgUrl);

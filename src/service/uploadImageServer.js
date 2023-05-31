@@ -12,18 +12,20 @@ export const UploadImageToServer = (imagebase64) => {
       const base64Data = imagebase64.replace(
         /^data:image\/(png|jpeg|jpg|webp);base64,","/
       );
-
       const imageName = `IMG-${Date.now()}.jpeg`;
       const imagePath = `${__dirname}/../../assets/images/${imageName}`;
-      const imageBuffer = Buffer.from(base64Data, "base64");
-      console.log(imagePath);
-      const jpegBuffer = await sharp(imageBuffer).toBuffer();
-      const image = await jimp.read(jpegBuffer);
-      if (!image) {
-        reject("Upload Image Faild");
-      }
-      image.write(imagePath);
-      resolve(imageName);
+      // const imageBuffer = Buffer.from(base64Data, "base64");
+      // const jpegBuffer = await sharp(imageBuffer).toBuffer()
+      // const image = await jimp.read(imageBuffer);
+      // if (!image) {
+      //   reject("Upload Image Faild");
+      // }
+      jimp.read(imagePath,()=>{
+         value.write(imageName)
+         resolve(imageName);
+      })
+     
+     
     } catch (error) {
       reject(error);
     }
