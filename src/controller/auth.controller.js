@@ -13,10 +13,14 @@ import {
   ValidateUpdateUser,
   ValidateUpdateUserProfile,
 } from "../service/validate.js";
-import { GenerateToken, ComparePassword,VerifyRefreshToken } from "../service/service.js";
+import {
+  GenerateToken,
+  ComparePassword,
+  VerifyRefreshToken,
+} from "../service/service.js";
 import { EMessage, SMessage } from "../service/message.js";
 import mongoose from "mongoose";
-import UploadImage, { UploadImageMulti } from "../config/cloudinary.js";
+import UploadImage from "../config/cloudinary.js";
 export default class AuthController {
   static async getProfile(req, res) {
     try {
@@ -89,14 +93,14 @@ export default class AuthController {
   static async RefreshToken(req, res) {
     try {
       const { token, refreshToken } = req.body;
-      if(!token || !refreshToken){
-       return SendError400(res,"token and refreshToken is required!")
+      if (!token || !refreshToken) {
+        return SendError400(res, "token and refreshToken is required!");
       }
-      const result = await VerifyRefreshToken(token,refreshToken); 
-      if(!result){
-      return SendError404(res,"Error Generate RefreshToken")
+      const result = await VerifyRefreshToken(token, refreshToken);
+      if (!result) {
+        return SendError404(res, "Error Generate RefreshToken");
       }
-     return SendSuccess(res,EMessage.refreshToken,result);
+      return SendSuccess(res, EMessage.refreshToken, result);
     } catch (error) {
       console.log("error refresh token", error);
       SendError500(res, "Error Refresh Token", error);
@@ -167,12 +171,12 @@ export default class AuthController {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         return SendError404(res, EMessage.NotFoundUserID);
       }
-      const { image, oldImage } = req.body;
-      const validate = ValidateUpdateUserProfile(req.body);
-      if (validate.length > 0) {
-        return SendError400(res, EMessage.PleaseInput + validate.join(","));
-      }
-      const imageUrl = await UploadImage(image, oldImage);
+       const { image, oldImage } = req.body;
+      // const validate = ValidateUpdateUserProfile(req.body);
+      // if (validate.length > 0) {
+      //   return SendError400(res, EMessage.PleaseInput + validate.join(","));
+      // }
+      const imageUrl = await UploadImage(image,oldImage);
       if (!imageUrl) {
         return SendError400(res, "Base64");
       }
@@ -193,6 +197,7 @@ export default class AuthController {
   static async updateUserProfileMulti(req, res) {
     try {
       let images = [];
+      let oldImages = [];
       const userId = req.params.userId;
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         return SendError404(res, EMessage.NotFoundUserID);
@@ -206,12 +211,21 @@ export default class AuthController {
       if (image) {
         let imagePaths = await image.split(" ");
         for (let i = 0; i < imagePaths.length; i++) {
+          ///
+          // if (oldImage) {
+          //   let oldImagePaths = await oldImage.split(" ");
+          //   for (let x = 0; x < oldImagePaths.length; x++) {
+          //     const oldImageUrl = await UploadImage(imagePaths[i],oldImagePaths[x]);
+          //     images.push(oldImageUrl);
+          //   }
+          // }
           const imgUrl = await UploadImage(imagePaths[i]);
           console.log(imgUrl);
           images.push(imgUrl);
         }
       }
-   
+    
+     
       const user = await Models.User.findByIdAndUpdate(
         userId,
         {
